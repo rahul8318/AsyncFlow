@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: AsyncFlow Enterprise REST API
+  description: >-
+    Enterprise Remote Work & Asynchronous Operations Platform API.
+    Provides complete multi-tenant operations for SOP authoring, stage-gated workflows,
+    employee learning & server-graded assessments, workshops, and organizational analytics.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local Development Server
+  - url: https://api.asyncflow.io/api/v1
+    description: Production Cloud Gateway
+
+paths:
+  /auth/register:
+    post:
+      summary: Register new user and organization
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, firstName, lastName]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                firstName: { type: string }
+                lastName: { type: string }
+                organizationName: { type: string }
+                jobTitle: { type: string }
+                timezone: { type: string, default: "UTC" }
+      responses:
+        201:
+          description: Registration successful, tokens issued.
+
+  /auth/login:
+    post:
+      summary: Login with credentials
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        200:
+          description: Authenticated successfully, returns JWT access and refresh tokens.
+
+  /auth/me:
+    get:
+      summary: Get current authenticated user profile and memberships
+      tags: [Authentication]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: User profile and active organization context.
+
+  /sops:
+    get:
+      summary: List organization standard operating procedures
+      tags: [SOP Management]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: assignedToMe
+          schema: { type: boolean }
+      responses:
+        200:
+          description: Array of organization SOPs with acknowledgement metadata.
+    post:
+      summary: Author a new SOP
+      tags: [SOP Management]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, summary, content]
+              properties:
+                title: { type: string }
+                summary: { type: string }
+                category: { type: string }
+                priority: { type: string }
+                content: { type: string }
+                checklist: { type: array, items: { type: object } }
+      responses:
+        201:
+          description: SOP created with version 1.
+
+  /sops/{id}/acknowledge:
+    post:
+      summary: Confirm and digitally acknowledge an SOP
+      tags: [SOP Management]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Digital acknowledgement recorded with IP timestamp.
+
+  /workflows:
+    get:
+      summary: List all active workflows
+      tags: [Workflows]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Array of workflows with stage summaries.
+    post:
+      summary: Create a new stage-gated workflow pipeline
+      tags: [Workflows]
+      security:
+        - BearerAuth: []
+      responses:
+        201:
+          description: Workflow created with 4 standard stages.
+
+  /training:
+    get:
+      summary: List course catalog
+      tags: [Training LMS]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Training programs with lesson count and progress.
+
+  /training/quizzes/{quizId}/submit:
+    post:
+      summary: Submit quiz answers for server-side grading
+      tags: [Quiz Engine]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: quizId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    required: [questionId, selectedOptionId]
+                    properties:
+                      questionId: { type: string }
+                      selectedOptionId: { type: string }
+      responses:
+        200:
+          description: Server-graded score and certificate issuance if passing.
+
+  /analytics/dashboard:
+    get:
+      summary: Fetch real-time executive dashboard KPIs
+      tags: [Analytics]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Database-calculated counts, rates, and recent activity log.
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

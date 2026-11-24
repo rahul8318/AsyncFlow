@@ -1,0 +1,90 @@
+name: AsyncFlow CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-test-and-build:
+    name: Backend CI (Tests & Build)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: asyncflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Generate Prisma Client & Migrate Test DB
+        working-directory: ./backend
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/asyncflow_test?schema=public"
+        run: |
+          npx prisma generate
+          npx prisma db push --skip-generate
+
+      - name: Run Backend Automated Tests
+        working-directory: ./backend
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/asyncflow_test?schema=public"
+          JWT_SECRET: "test-jwt-secret-key-must-be-32-chars-long"
+          JWT_REFRESH_SECRET: "test-refresh-secret-key-must-be-32-chars"
+          REDIS_ENABLED: "false"
+        run: npm test
+
+      - name: Compile Backend TypeScript
+        working-directory: ./backend
+        run: npm run build
+
+  frontend-test-and-build:
+    name: Frontend CI (Lint, Test & Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run Frontend Tests
+        working-directory: ./frontend
+        run: npm test
+
+      - name: Build Frontend Production Bundle
+        working-directory: ./frontend
+        run: npm run build
