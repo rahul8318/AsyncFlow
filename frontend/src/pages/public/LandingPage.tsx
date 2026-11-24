@@ -31,14 +31,6 @@ export const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28 border-b border-zinc-200/80 bg-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center">
-          {/* Micro Status Chip */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-medium text-zinc-700 mb-6 shadow-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Built for Distributed Engineering & Operations</span>
-            <span className="text-zinc-300">•</span>
-            <span className="text-blue-600 font-semibold">v2.4 Released</span>
-          </div>
-
           {/* Core Headline */}
           <h1 className="text-4xl font-extrabold tracking-tight text-zinc-950 sm:text-6xl max-w-4xl mx-auto leading-[1.08]">
             The operating system for teams that hate meetings.
