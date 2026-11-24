@@ -34,54 +34,54 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fafafa] flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-zinc-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-500/20">
-            <Workflow className="h-6 w-6" />
+        <Link to="/" className="inline-flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white shadow-xs">
+            <Workflow className="h-4 w-4" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-slate-900">
+          <span className="text-xl font-bold tracking-tight text-zinc-900">
             Async<span className="text-blue-600">Flow</span>
           </span>
         </Link>
-        <h2 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">
-          Sign in to your enterprise workspace
+        <h2 className="mt-5 text-xl font-bold tracking-tight text-zinc-900">
+          Sign in to your organization
         </h2>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-zinc-500">
           Or{' '}
           <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-500">
-            start a new 14-day organization trial
+            register a new enterprise workspace
           </Link>
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 rounded-2xl sm:px-10 border border-slate-200/80 space-y-6">
-          {/* Quick Demo Role Fillers */}
-          <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-900">
-              <Shield className="h-3.5 w-3.5 text-blue-600" />
-              <span>Click to auto-fill pre-seeded demo accounts:</span>
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-6 shadow-card rounded-xl sm:px-8 border border-zinc-200/80 space-y-5">
+          {/* One-click demo roles segmented bar */}
+          <div className="rounded-lg border border-zinc-200/70 bg-zinc-50/70 p-2.5 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-zinc-700">Pre-seeded Demo Roles:</span>
+              <span className="text-zinc-400 font-mono text-[10px]">Click to fill</span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+            <div className="grid grid-cols-3 gap-1.5 text-xs">
               <button
                 type="button"
                 onClick={() => handleQuickLogin('admin@acme.com')}
-                className="rounded-lg border border-blue-200 bg-white py-1.5 font-medium text-blue-700 hover:bg-blue-100/50 transition-colors"
+                className="rounded border border-zinc-200 bg-white py-1 font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition text-[11px]"
               >
                 Org Admin
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin('manager@acme.com')}
-                className="rounded-lg border border-blue-200 bg-white py-1.5 font-medium text-blue-700 hover:bg-blue-100/50 transition-colors"
+                className="rounded border border-zinc-200 bg-white py-1 font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition text-[11px]"
               >
-                Team Manager
+                Manager
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin('employee@acme.com')}
-                className="rounded-lg border border-blue-200 bg-white py-1.5 font-medium text-blue-700 hover:bg-blue-100/50 transition-colors"
+                className="rounded border border-zinc-200 bg-white py-1 font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition text-[11px]"
               >
                 Employee
               </button>
@@ -89,29 +89,29 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs font-medium text-red-700 border border-red-200">
+            <div className="flex items-center gap-2 rounded-lg bg-rose-50 p-2.5 text-xs font-medium text-rose-700 border border-rose-200">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             <Input
               label="Work Email Address"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@company.com"
-              leftIcon={<Mail className="h-4 w-4" />}
+              leftIcon={<Mail className="h-3.5 w-3.5" />}
               required
             />
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-700">Password</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-medium tracking-tight text-zinc-700">Password</label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs font-medium text-blue-600 hover:text-blue-500"
+                  className="text-[11px] font-medium text-blue-600 hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -121,19 +121,22 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                leftIcon={<Lock className="h-4 w-4" />}
+                leftIcon={<Lock className="h-3.5 w-3.5" />}
                 required
               />
             </div>
 
-            <Button
-              type="submit"
-              isLoading={loading}
-              className="w-full mt-2"
-              rightIcon={<ArrowRight className="h-4 w-4" />}
-            >
-              Sign In to Workspace
-            </Button>
+            <div className="pt-1">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={loading}
+                className="w-full"
+                rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+              >
+                Sign In
+              </Button>
+            </div>
           </form>
         </div>
       </div>

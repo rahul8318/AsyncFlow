@@ -12,6 +12,8 @@ import {
   User,
   Shield,
   Layers,
+  Flag,
+  Share2,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Workflow, WorkflowStage, WorkflowTask } from '../../types';
@@ -83,8 +85,8 @@ export const WorkflowBoardPage: React.FC = () => {
     try {
       await api.post(`/workflows/${id}/tasks`, {
         stageId: activeStageId,
-        title: taskForm.title,
-        description: taskForm.description,
+        title: taskForm.title.trim(),
+        description: taskForm.description.trim(),
         priority: taskForm.priority,
         assigneeId: taskForm.assigneeId || undefined,
         requiresApproval: taskForm.requiresApproval,
@@ -117,13 +119,15 @@ export const WorkflowBoardPage: React.FC = () => {
     }
   };
 
+  const totalTasks = workflow?.stages?.reduce((acc, s) => acc + (s.tasks?.length || 0), 0) || 0;
+
   if (loading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-96 rounded-2xl" />
+            <Skeleton key={i} className="h-96 rounded-xl" />
           ))}
         </div>
       </div>
@@ -132,10 +136,12 @@ export const WorkflowBoardPage: React.FC = () => {
 
   if (!workflow) {
     return (
-      <div className="text-center py-16">
-        <h3 className="text-base font-bold text-slate-800">Workflow not found</h3>
-        <Button onClick={() => navigate('/app/workflows')} className="mt-4">
-          Back to Workflows
+      <div className="text-center py-20 bg-white border border-zinc-200 rounded-xl">
+        <Layers className="h-10 w-10 text-zinc-400 mx-auto mb-3" />
+        <h3 className="text-base font-semibold text-zinc-900">Pipeline board not found</h3>
+        <p className="text-xs text-zinc-500 mt-1">This pipeline may have been deleted or archived.</p>
+        <Button onClick={() => navigate('/app/workflows')} className="mt-4" size="sm">
+          Return to Workflows
         </Button>
       </div>
     );
@@ -143,23 +149,49 @@ export const WorkflowBoardPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <button
-            onClick={() => navigate('/app/workflows')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 mb-1"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Workflows
-          </button>
+      {/* Top Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/app/workflows')}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Pipelines
+            </button>
+            <span className="text-zinc-300">/</span>
+            <span className="font-mono text-xs text-zinc-500">PIPE-{workflow.id.slice(0, 8)}</span>
+          </div>
+
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-extrabold text-slate-900">{workflow.title}</h1>
-            <Badge variant="primary">{workflow.category}</Badge>
+            <h1 className="text-xl font-semibold tracking-tight text-zinc-900">{workflow.title}</h1>
+            <Badge variant="outline" className="font-mono text-[10px] tracking-wide uppercase">
+              {workflow.category.replace('_', ' ')}
+            </Badge>
+            <span className="text-xs font-mono text-zinc-400">
+              {totalTasks} total {totalTasks === 1 ? 'task' : 'tasks'}
+            </span>
           </div>
         </div>
 
-        <div className="text-xs text-slate-400">
-          Created by <strong className="text-slate-700">{workflow.createdBy?.firstName} {workflow.createdBy?.lastName}</strong>
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-zinc-500">
+            Owner: <strong className="text-zinc-800 font-medium">{workflow.createdBy?.firstName} {workflow.createdBy?.lastName}</strong>
+          </div>
+
+          <Button
+            size="sm"
+            onClick={() => {
+              const firstStage = workflow.stages?.[0];
+              if (firstStage) {
+                setActiveStageId(firstStage.id);
+                setShowCreateTaskModal(true);
+              }
+            }}
+            leftIcon={<Plus className="h-3.5 w-3.5" />}
+          >
+            New Task
+          </Button>
         </div>
       </div>
 
@@ -171,17 +203,17 @@ export const WorkflowBoardPage: React.FC = () => {
           return (
             <div
               key={stage.id}
-              className="rounded-2xl border border-slate-200 bg-slate-100/70 p-3.5 space-y-3"
+              className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 space-y-3"
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80">
                 <div className="flex items-center gap-2">
                   <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: stage.color || '#3b82f6' }}
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: stage.color || '#71717a' }}
                   />
-                  <h3 className="text-xs font-bold text-slate-900">{stage.name}</h3>
-                  <span className="rounded-full bg-slate-200 px-1.5 py-0.2 text-[10px] font-bold text-slate-600">
+                  <h3 className="text-xs font-semibold text-zinc-900">{stage.name}</h3>
+                  <span className="font-mono rounded bg-zinc-200/80 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700">
                     {tasks.length}
                   </span>
                 </div>
@@ -191,61 +223,71 @@ export const WorkflowBoardPage: React.FC = () => {
                     setActiveStageId(stage.id);
                     setShowCreateTaskModal(true);
                   }}
-                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
-                  title="Add task to column"
+                  className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
+                  title={`Add task to ${stage.name}`}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5" />
                 </button>
               </div>
 
               {/* Tasks List */}
-              <div className="space-y-2.5 min-h-[300px]">
+              <div className="space-y-2.5 min-h-[360px]">
                 {tasks.length === 0 ? (
-                  <div className="h-32 flex items-center justify-center rounded-xl border border-dashed border-slate-200 text-[11px] text-slate-400">
-                    No tasks in {stage.name}
+                  <div className="h-32 flex items-center justify-center rounded-lg border border-dashed border-zinc-200 text-[11px] font-mono text-zinc-400">
+                    No active tasks
                   </div>
                 ) : (
                   tasks.map((task) => (
                     <div
                       key={task.id}
-                      className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm hover:shadow transition space-y-2.5"
+                      className="rounded-lg border border-zinc-200 bg-white p-3.5 shadow-sm hover:border-zinc-300 transition-all space-y-2.5"
                     >
-                      <div className="flex items-start justify-between gap-1.5">
-                        <h4 className="text-xs font-bold text-slate-900 leading-snug">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="text-xs font-medium text-zinc-900 leading-snug">
                           {task.title}
                         </h4>
                         <Badge
-                          variant={task.priority === 'URGENT' || task.priority === 'HIGH' ? 'danger' : 'secondary'}
-                          className="text-[9px] px-1.5 py-0 shrink-0"
+                          variant={
+                            task.priority === 'URGENT'
+                              ? 'danger'
+                              : task.priority === 'HIGH'
+                              ? 'warning'
+                              : 'secondary'
+                          }
+                          className="text-[9px] px-1.5 py-0 shrink-0 font-mono"
                         >
                           {task.priority}
                         </Badge>
                       </div>
 
                       {task.description && (
-                        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed font-normal">
                           {task.description}
                         </p>
                       )}
 
                       {/* Approval Request Banner */}
                       {task.approvals && task.approvals.length > 0 && (
-                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-2 space-y-1.5 text-[10px]">
-                          <div className="flex items-center justify-between font-bold text-amber-900">
-                            <span>Approval Signoff:</span>
-                            <span className="uppercase">{task.approvals[0].status}</span>
+                        <div className="rounded-md border border-amber-200 bg-amber-50/60 p-2.5 space-y-1.5 text-[10px]">
+                          <div className="flex items-center justify-between font-medium text-amber-900">
+                            <span className="flex items-center gap-1">
+                              <Shield className="h-3 w-3 text-amber-700" /> Lead Approval:
+                            </span>
+                            <Badge variant={task.approvals[0].status === 'APPROVED' ? 'success' : task.approvals[0].status === 'REJECTED' ? 'danger' : 'warning'} className="text-[9px] px-1 py-0 font-mono">
+                              {task.approvals[0].status}
+                            </Badge>
                           </div>
                           {task.approvals[0].status === 'PENDING' && (
                             <div className="flex gap-1.5 pt-1">
                               <button
                                 onClick={() => handleReviewApproval(task.approvals![0].id, 'APPROVED')}
-                                className="flex-1 rounded bg-emerald-600 text-white font-semibold py-1 flex items-center justify-center gap-1 hover:bg-emerald-700"
+                                className="flex-1 rounded bg-zinc-900 text-white font-medium py-1 text-[10px] flex items-center justify-center gap-1 hover:bg-zinc-800 transition-colors"
                               >
                                 <Check className="h-3 w-3" /> Approve
                               </button>
                               <button
                                 onClick={() => handleReviewApproval(task.approvals![0].id, 'REJECTED')}
-                                className="flex-1 rounded bg-rose-600 text-white font-semibold py-1 flex items-center justify-center gap-1 hover:bg-rose-700"
+                                className="flex-1 rounded bg-white border border-rose-200 text-rose-700 font-medium py-1 text-[10px] flex items-center justify-center gap-1 hover:bg-rose-50 transition-colors"
                               >
                                 <X className="h-3 w-3" /> Reject
                               </button>
@@ -254,14 +296,14 @@ export const WorkflowBoardPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Bottom row: Assignee & Stage mover */}
-                      <div className="border-t border-slate-100 pt-2 flex items-center justify-between text-[10px] text-slate-400">
+                      {/* Bottom Row: Assignee & Stage Mover */}
+                      <div className="border-t border-zinc-100 pt-2 flex items-center justify-between text-[10px]">
                         <div className="flex items-center gap-1.5">
-                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[9px] font-bold text-white">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-[9px] font-mono font-bold text-white">
                             {task.assignee?.firstName?.[0] || 'U'}
                           </div>
-                          <span className="text-slate-700 font-medium">
-                            {task.assignee ? `${task.assignee.firstName}` : 'Unassigned'}
+                          <span className="text-zinc-600 font-medium truncate max-w-[80px]">
+                            {task.assignee ? task.assignee.firstName : 'Unassigned'}
                           </span>
                         </div>
 
@@ -269,11 +311,11 @@ export const WorkflowBoardPage: React.FC = () => {
                         <select
                           value={stage.id}
                           onChange={(e) => handleMoveTask(task.id, e.target.value)}
-                          className="rounded bg-slate-50 border border-slate-200 px-1 py-0.5 text-[10px] text-slate-600 font-medium focus:outline-none"
+                          className="rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] text-zinc-600 font-medium focus:border-zinc-900 focus:outline-none transition-colors cursor-pointer"
                         >
                           {workflow.stages?.map((s) => (
                             <option key={s.id} value={s.id}>
-                              Move to: {s.name}
+                              → {s.name}
                             </option>
                           ))}
                         </select>
@@ -291,15 +333,15 @@ export const WorkflowBoardPage: React.FC = () => {
       <Modal
         isOpen={showCreateTaskModal}
         onClose={() => setShowCreateTaskModal(false)}
-        title="Add Task to Workflow"
-        description="Assign a structured task item with clear completion criteria."
+        title="Add Operational Task"
+        description="Specify requirements and designated ownership for this pipeline item."
       >
-        <form onSubmit={handleCreateTask} className="space-y-4 pt-2">
+        <form onSubmit={handleCreateTask} className="space-y-4 pt-1">
           <Input
             label="Task Title"
             value={taskForm.title}
             onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-            placeholder="e.g. Complete GPG Key Signing & Local Dev Setup"
+            placeholder="e.g. Verify GPG Key Signing & Staging Database Migration"
             required
           />
 
@@ -307,17 +349,17 @@ export const WorkflowBoardPage: React.FC = () => {
             label="Description & Acceptance Criteria"
             value={taskForm.description}
             onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
-            placeholder="Specify exact links, steps, and artifacts required..."
+            placeholder="Outline exact specifications, documentation links, and verification steps..."
             rows={3}
           />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Priority</label>
+              <label className="block text-xs font-medium text-zinc-700 mb-1.5">Priority</label>
               <select
                 value={taskForm.priority}
                 onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none transition-colors"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -327,11 +369,11 @@ export const WorkflowBoardPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Assignee</label>
+              <label className="block text-xs font-medium text-zinc-700 mb-1.5">Assignee</label>
               <select
                 value={taskForm.assigneeId}
                 onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none transition-colors"
               >
                 <option value="">Unassigned</option>
                 {members.map((m) => (
@@ -343,27 +385,27 @@ export const WorkflowBoardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Optional Approval Requirement */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-3">
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
+          {/* Optional Lead Approval Gate */}
+          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 space-y-3">
+            <label className="flex items-center gap-2.5 text-xs font-medium text-zinc-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={taskForm.requiresApproval}
                 onChange={(e) => setTaskForm({ ...taskForm, requiresApproval: e.target.checked })}
-                className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
+                className="rounded border-zinc-300 text-zinc-900 focus:ring-0 focus:outline-none h-4 w-4"
               />
-              <span>Require Team Lead / Manager Approval before completion</span>
+              <span>Require Team Lead / Manager Approval before task completion</span>
             </label>
 
             {taskForm.requiresApproval && (
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <div className="pt-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   Designated Approver
                 </label>
                 <select
                   value={taskForm.approverId}
                   onChange={(e) => setTaskForm({ ...taskForm, approverId: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                  className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:border-zinc-900 focus:outline-none transition-colors"
                   required={taskForm.requiresApproval}
                 >
                   <option value="">Select Approver</option>
@@ -378,10 +420,10 @@ export const WorkflowBoardPage: React.FC = () => {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setShowCreateTaskModal(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowCreateTaskModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={submittingTask}>
+            <Button type="submit" size="sm" isLoading={submittingTask}>
               Create Task
             </Button>
           </div>

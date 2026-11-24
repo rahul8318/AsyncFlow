@@ -3,7 +3,6 @@ import { Bell, CheckCheck, Clock, ExternalLink } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Card } from '../../components/ui/Card';
 import { formatDateTime } from '../../lib/utils';
 import { Link } from 'react-router-dom';
 
@@ -12,13 +11,13 @@ export const NotificationsPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
             Notification Center
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Real-time notifications for SOP assignments, workflow approvals, and workshop reminders.
+          <p className="mt-1 text-xs text-zinc-500">
+            Real-time notifications for SOP assignments, workflow approvals, and event reminders.
           </p>
         </div>
 
@@ -27,54 +26,55 @@ export const NotificationsPage: React.FC = () => {
             size="sm"
             variant="outline"
             onClick={() => markAllAsRead()}
-            leftIcon={<CheckCheck className="h-4 w-4 text-blue-600" />}
+            leftIcon={<CheckCheck className="h-3.5 w-3.5 text-zinc-600" />}
           >
             Mark All as Read
           </Button>
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {notifications.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-xs text-slate-400">
-            You are all caught up! No notifications.
+          <div className="rounded-xl border border-dashed border-zinc-200 bg-white p-12 text-center text-xs font-mono text-zinc-400">
+            All notifications read. No pending alerts.
           </div>
         ) : (
           notifications.map((notif) => (
             <div
               key={notif.id}
               onClick={() => !notif.isRead && markAsRead(notif.id)}
-              className={`rounded-2xl border p-4 sm:p-5 transition flex items-start justify-between gap-4 cursor-pointer ${
+              className={`rounded-xl border p-4 transition-colors flex items-start justify-between gap-4 cursor-pointer ${
                 !notif.isRead
-                  ? 'border-blue-200 bg-blue-50/40 hover:bg-blue-50/60 shadow-sm'
-                  : 'border-slate-200 bg-white hover:bg-slate-50'
+                  ? 'border-zinc-900 bg-zinc-50/60 shadow-sm'
+                  : 'border-zinc-200 bg-white hover:bg-zinc-50/50'
               }`}
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h4 className={`text-sm ${!notif.isRead ? 'font-bold text-slate-900' : 'font-semibold text-slate-700'}`}>
+                  <h4 className={`text-xs ${!notif.isRead ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-700'}`}>
                     {notif.title}
                   </h4>
                   {!notif.isRead && (
-                    <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-900 shrink-0" />
                   )}
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                <p className="text-xs text-zinc-500 leading-relaxed font-normal">
                   {notif.message}
                 </p>
-                <p className="text-[10px] text-slate-400 flex items-center gap-1 pt-1">
+                <div className="flex items-center gap-2 pt-1 text-[10px] font-mono text-zinc-400">
                   <Clock className="h-3 w-3" />
-                  {formatDateTime(notif.createdAt)}
-                </p>
+                  <span>{formatDateTime(notif.createdAt)}</span>
+                </div>
               </div>
 
               {notif.linkUrl && (
                 <Link
                   to={notif.linkUrl}
-                  className="rounded-lg p-2 text-slate-400 hover:text-blue-600 hover:bg-white transition"
-                  title="Go to resource"
+                  className="rounded-md border border-zinc-200 bg-white p-1.5 text-zinc-600 hover:text-zinc-900 hover:border-zinc-300 transition-colors shrink-0"
+                  title="Open notification link"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               )}
             </div>

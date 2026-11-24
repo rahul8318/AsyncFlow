@@ -10,6 +10,7 @@ import {
   ArrowRight,
   ExternalLink,
   MessageSquare,
+  X,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Workshop } from '../../types';
@@ -127,39 +128,43 @@ export const WorkshopsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Live Interactive Workshops & Training Events
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+            Interactive Workshops & Facilitated Clinics
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Facilitated sessions on silent meetings, cross-timezone handoffs, and asynchronous leadership.
+          <p className="mt-1 text-xs text-zinc-500">
+            Live working sessions on silent meetings, documentation standards, and time-zone management.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Timeframe toggle */}
-          <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+          {/* Timeframe Toggle */}
+          <div className="flex rounded-md border border-zinc-200 bg-zinc-50 p-0.5 text-xs">
             <button
               onClick={() => setTimeframe('upcoming')}
-              className={`rounded-lg px-3 py-1.5 transition ${
-                timeframe === 'upcoming' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+              className={`rounded px-3 py-1 font-medium transition-all ${
+                timeframe === 'upcoming'
+                  ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/60'
+                  : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
-              Upcoming
+              Upcoming ({workshops.length})
             </button>
             <button
               onClick={() => setTimeframe('past')}
-              className={`rounded-lg px-3 py-1.5 transition ${
-                timeframe === 'past' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+              className={`rounded px-3 py-1 font-medium transition-all ${
+                timeframe === 'past'
+                  ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200/60'
+                  : 'text-zinc-500 hover:text-zinc-900'
               }`}
             >
-              Past / Completed
+              Past Sessions
             </button>
           </div>
 
           {canCreate && (
-            <Button onClick={() => setShowCreateModal(true)} leftIcon={<Plus className="h-4 w-4" />}>
+            <Button onClick={() => setShowCreateModal(true)} size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>
               Schedule Workshop
             </Button>
           )}
@@ -168,172 +173,197 @@ export const WorkshopsPage: React.FC = () => {
 
       {/* Workshop Cards Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-64 rounded-2xl" />
+            <Skeleton key={i} className="h-60 rounded-xl" />
           ))}
         </div>
       ) : workshops.length === 0 ? (
         <EmptyState
-          icon={<CalendarDays className="h-10 w-10 text-slate-400" />}
-          title={`No ${timeframe} workshops`}
-          description="Check back soon or schedule an interactive working session for your squad."
+          icon={<CalendarDays className="h-8 w-8 text-zinc-400" />}
+          title={`No ${timeframe} workshops scheduled`}
+          description="Check back soon or schedule an interactive working session for your organization."
           actionLabel={canCreate ? 'Schedule First Workshop' : undefined}
           onAction={() => setShowCreateModal(true)}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {workshops.map((w) => (
-            <div
-              key={w.id}
-              className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-start justify-between gap-2">
-                  <Badge variant={w.status === 'COMPLETED' ? 'secondary' : 'primary'}>
-                    {w.status}
-                  </Badge>
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                    <Clock className="h-3.5 w-3.5 text-slate-400" />
-                    {formatDateTime(w.scheduledAt)} ({w.durationMinutes} mins)
-                  </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {workshops.map((w) => {
+            const dateObj = new Date(w.scheduledAt);
+            const monthStr = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+            const dayStr = dateObj.getDate();
+
+            return (
+              <div
+                key={w.id}
+                className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm hover:border-zinc-900 transition-all flex flex-col justify-between"
+              >
+                <div className="space-y-3.5">
+                  <div className="flex items-start gap-4">
+                    {/* Stacked Date Badge */}
+                    <div className="flex flex-col items-center justify-center h-12 w-12 rounded-lg border border-zinc-200 bg-zinc-50 shrink-0 font-mono">
+                      <span className="text-[9px] font-bold text-zinc-500 uppercase">{monthStr}</span>
+                      <span className="text-base font-bold text-zinc-900 leading-tight">{dayStr}</span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge
+                          variant={w.status === 'COMPLETED' ? 'secondary' : 'outline'}
+                          className="font-mono text-[10px]"
+                        >
+                          {w.status}
+                        </Badge>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400">
+                          <Clock className="h-3 w-3" />
+                          {w.durationMinutes} mins
+                        </span>
+                      </div>
+
+                      <h3 className="text-sm font-semibold text-zinc-900 mt-1 truncate">
+                        {w.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed font-normal">
+                    {w.description}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500 pt-2 border-t border-zinc-100 font-mono text-[11px]">
+                    <span>Instructor: <strong className="text-zinc-800 font-sans font-medium">{w.instructorName}</strong></span>
+                    <span className="text-zinc-300">•</span>
+                    <span>RSVPs: <strong className="text-zinc-800 font-mono font-medium">{w.registeredCount || 0} / {w.maxAttendees}</strong></span>
+                  </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-900">{w.title}</h3>
-
-                <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
-                  {w.description}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-2 border-t border-slate-100">
-                  <span>Instructor: <strong className="text-slate-800">{w.instructorName}</strong></span>
-                  <span>•</span>
-                  <span>Seats: <strong className="text-slate-800">{w.registeredCount || 0} / {w.maxAttendees}</strong></span>
-                </div>
-              </div>
-
-              {/* Bottom Actions */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                {w.meetingUrl && w.isRegistered && (
-                  <a
-                    href={w.meetingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    <Video className="h-3.5 w-3.5" /> Join Virtual Room <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-
-                <div className="flex items-center gap-2 ml-auto">
-                  {w.status === 'COMPLETED' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedWorkshopId(w.id);
-                        setShowFeedbackModal(true);
-                      }}
-                      leftIcon={<Star className="h-3.5 w-3.5 text-amber-500" />}
+                {/* Bottom Actions */}
+                <div className="mt-5 pt-3.5 border-t border-zinc-100 flex items-center justify-between">
+                  {w.meetingUrl && w.isRegistered ? (
+                    <a
+                      href={w.meetingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-900 hover:underline"
                     >
-                      Leave Feedback
-                    </Button>
-                  ) : w.isRegistered ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleCancelRegistration(w.id)}
-                      className="text-red-600 hover:bg-red-50 hover:border-red-200"
-                    >
-                      Cancel RSVP
-                    </Button>
+                      <Video className="h-3.5 w-3.5 text-zinc-700" /> Join Virtual Room <ExternalLink className="h-3 w-3 text-zinc-400" />
+                    </a>
                   ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => handleRegister(w.id)}
-                      rightIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
-                    >
-                      Register Now
-                    </Button>
+                    <div />
                   )}
+
+                  <div className="flex items-center gap-2 ml-auto">
+                    {w.status === 'COMPLETED' ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedWorkshopId(w.id);
+                          setShowFeedbackModal(true);
+                        }}
+                        leftIcon={<Star className="h-3.5 w-3.5 text-amber-500" />}
+                      >
+                        Feedback
+                      </Button>
+                    ) : w.isRegistered ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCancelRegistration(w.id)}
+                        className="text-rose-600 hover:border-rose-300 hover:bg-rose-50"
+                      >
+                        Cancel RSVP
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => handleRegister(w.id)} leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}>
+                        RSVP Seat
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Schedule Workshop Modal */}
+      {/* Create Workshop Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Schedule Live Operations Workshop"
-        description="Host an interactive session on asynchronous culture or technical handoffs."
+        title="Schedule Interactive Workshop"
+        description="Organize a live interactive working session for distributed team alignment."
       >
-        <form onSubmit={handleCreateWorkshop} className="space-y-4 pt-2">
+        <form onSubmit={handleCreateWorkshop} className="space-y-4 pt-1">
           <Input
             label="Workshop Title"
             value={createForm.title}
             onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-            placeholder="e.g. Mastering Async Decision Making & Silent Meetings"
+            placeholder="e.g. Asynchronous Decision-Making & Silent Reading Clinic"
             required
           />
 
-          <Input
-            label="Instructor Name & Title"
-            value={createForm.instructorName}
-            onChange={(e) => setCreateForm({ ...createForm, instructorName: e.target.value })}
-            placeholder="e.g. Sarah Chen (VP Operations)"
-            required
+          <Textarea
+            label="Workshop Overview"
+            value={createForm.description}
+            onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+            placeholder="State the core takeaways and agenda..."
+            rows={2}
           />
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Scheduled Date & Time"
+              label="Lead Facilitator / Instructor"
+              value={createForm.instructorName}
+              onChange={(e) => setCreateForm({ ...createForm, instructorName: e.target.value })}
+              placeholder="e.g. Sarah Jenkins (VP Operations)"
+              required
+            />
+
+            <Input
+              label="Date & Time (UTC)"
               type="datetime-local"
               value={createForm.scheduledAt}
               onChange={(e) => setCreateForm({ ...createForm, scheduledAt: e.target.value })}
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <Input
               label="Duration (Minutes)"
               type="number"
               value={createForm.durationMinutes}
               onChange={(e) => setCreateForm({ ...createForm, durationMinutes: Number(e.target.value) })}
+              min={15}
+              max={240}
               required
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Meeting URL (Google Meet / Zoom)"
-              value={createForm.meetingUrl}
-              onChange={(e) => setCreateForm({ ...createForm, meetingUrl: e.target.value })}
-              placeholder="https://meet.asyncflow.io/workshop"
-            />
             <Input
               label="Max Attendees"
               type="number"
               value={createForm.maxAttendees}
               onChange={(e) => setCreateForm({ ...createForm, maxAttendees: Number(e.target.value) })}
+              min={5}
+              max={500}
+              required
             />
           </div>
 
-          <Textarea
-            label="Description & Learning Objectives"
-            value={createForm.description}
-            onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-            placeholder="What practical techniques will attendees master during this session?"
-            rows={3}
-            required
+          <Input
+            label="Virtual Meeting Link (Google Meet / Zoom)"
+            value={createForm.meetingUrl}
+            onChange={(e) => setCreateForm({ ...createForm, meetingUrl: e.target.value })}
+            placeholder="https://meet.google.com/xyz-abcd-efg"
           />
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowCreateModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={submitting}>
-              Schedule Workshop
+            <Button type="submit" size="sm" isLoading={submitting}>
+              Schedule Event
             </Button>
           </div>
         </form>
@@ -343,43 +373,44 @@ export const WorkshopsPage: React.FC = () => {
       <Modal
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
-        title="Workshop Feedback & Rating"
-        description="Share your perspective to help refine future asynchronous training."
+        title="Session Feedback"
+        description="Share your feedback to help improve future workshops."
       >
-        <form onSubmit={handleSubmitFeedback} className="space-y-4 pt-2">
+        <form onSubmit={handleSubmitFeedback} className="space-y-4 pt-1">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Rating</label>
+            <label className="block text-xs font-medium text-zinc-700 mb-1.5">Rating (1 to 5 Stars)</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   type="button"
                   key={star}
                   onClick={() => setFeedbackForm({ ...feedbackForm, rating: star })}
-                  className={`p-2 rounded-xl border transition ${
+                  className={`p-2 rounded-md border transition-all ${
                     feedbackForm.rating >= star
-                      ? 'border-amber-300 bg-amber-50 text-amber-500'
-                      : 'border-slate-200 text-slate-300'
+                      ? 'border-amber-400 bg-amber-50 text-amber-500'
+                      : 'border-zinc-200 bg-white text-zinc-300'
                   }`}
                 >
-                  <Star className="h-6 w-6 fill-current" />
+                  <Star className="h-5 w-5 fill-current" />
                 </button>
               ))}
             </div>
           </div>
 
           <Textarea
-            label="Comments / Takeaways"
+            label="Feedback & Suggestions"
             value={feedbackForm.comment}
             onChange={(e) => setFeedbackForm({ ...feedbackForm, comment: e.target.value })}
-            placeholder="What was the most actionable insight from this session?"
+            placeholder="What was most helpful? What could be improved for asynchronous operations?"
             rows={3}
+            required
           />
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setShowFeedbackModal(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowFeedbackModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={submitting}>
+            <Button type="submit" size="sm" isLoading={submitting}>
               Submit Feedback
             </Button>
           </div>

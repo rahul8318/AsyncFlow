@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Users,
   UserPlus,
@@ -8,7 +8,8 @@ import {
   MoreVertical,
   CheckCircle2,
   Trash2,
-  Edit,
+  Search,
+  Filter,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { OrganizationMember, Department, Team, Role } from '../../types';
@@ -16,7 +17,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
-import { Skeleton } from '../../components/ui/EmptyState';
+import { Skeleton, EmptyState } from '../../components/ui/EmptyState';
 import { formatDate } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,6 +27,8 @@ export const TeamManagementPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL');
 
   // Invite Modal
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -67,7 +70,7 @@ export const TeamManagementPage: React.FC = () => {
 
     try {
       await api.post('/organizations/members/invite', {
-        email: inviteForm.email,
+        email: inviteForm.email.trim(),
         role: inviteForm.role,
         departmentId: inviteForm.departmentId || undefined,
         teamId: inviteForm.teamId || undefined,
@@ -94,151 +97,186 @@ export const TeamManagementPage: React.FC = () => {
     }
   };
 
+  const filteredMembers = useMemo(() => {
+    return members.filter((m) => {
+      const fullName = `${m.user.firstName} ${m.user.lastName}`.toLowerCase();
+      const email = m.user.email.toLowerCase();
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = fullName.includes(query) || email.includes(query);
+      const matchesRole = roleFilter === 'ALL' || m.role === roleFilter;
+      return matchesSearch && matchesRole;
+    });
+  }, [members, searchQuery, roleFilter]);
+
   const isOrgAdmin =
     currentMembership?.role === 'ORG_ADMIN' || currentMembership?.role === 'SUPER_ADMIN';
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Team & Organizational Member Roster
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+            Personnel Directory & Access Control
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            Manage global team members, departmental squads, and role-based access permissions.
+          <p className="mt-1 text-xs text-zinc-500">
+            Manage organization members, role-based authorization, departments, and squads.
           </p>
         </div>
 
         {isOrgAdmin && (
-          <Button onClick={() => setShowInviteModal(true)} leftIcon={<UserPlus className="h-4 w-4" />}>
+          <Button onClick={() => setShowInviteModal(true)} size="sm" leftIcon={<UserPlus className="h-3.5 w-3.5" />}>
             Invite Member
           </Button>
         )}
       </div>
 
-      {/* Members Table Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/70 font-semibold text-slate-700">
-                <th className="py-3.5 px-6">Employee</th>
-                <th className="py-3.5 px-4">Role</th>
-                <th className="py-3.5 px-4">Department & Squad</th>
-                <th className="py-3.5 px-4">Timezone</th>
-                <th className="py-3.5 px-4">Joined</th>
-                {isOrgAdmin && <th className="py-3.5 px-6 text-right">Actions</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                [1, 2, 3, 4].map((i) => (
-                  <tr key={i}>
-                    <td colSpan={6} className="py-4 px-6">
-                      <Skeleton className="h-8 w-full rounded-lg" />
-                    </td>
-                  </tr>
-                ))
-              ) : members.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">
-                    No members found.
-                  </td>
-                </tr>
-              ) : (
-                members.map((member) => (
-                  <tr key={member.id} className="hover:bg-slate-50/80 transition-colors">
-                    {/* User info */}
-                    <td className="py-3.5 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white font-bold text-xs shrink-0">
-                          {member.user.firstName?.[0] || 'U'}
-                        </div>
-                        <div className="truncate">
-                          <p className="font-semibold text-slate-900">
-                            {member.user.firstName} {member.user.lastName}
-                          </p>
-                          <p className="text-[10px] text-slate-400 truncate">{member.user.email}</p>
-                        </div>
-                      </div>
-                    </td>
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search personnel by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-md border border-zinc-200 bg-white pl-9 pr-3 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none transition-colors"
+          />
+        </div>
 
-                    {/* Role */}
-                    <td className="py-3.5 px-4">
-                      <Badge
-                        variant={
-                          member.role === 'ORG_ADMIN'
-                            ? 'primary'
-                            : member.role === 'TEAM_MANAGER'
-                            ? 'success'
-                            : 'secondary'
-                        }
-                        className="text-[10px]"
-                      >
-                        {member.role.replace('_', ' ')}
-                      </Badge>
-                    </td>
-
-                    {/* Department / Team */}
-                    <td className="py-3.5 px-4">
-                      <p className="font-medium text-slate-800">
-                        {member.department?.name || 'General Org'}
-                      </p>
-                      <p className="text-[10px] text-slate-400">
-                        {member.team?.name || 'No squad'}
-                      </p>
-                    </td>
-
-                    {/* Timezone */}
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-600">
-                      {member.user.timezone || 'UTC'}
-                    </td>
-
-                    {/* Joined Date */}
-                    <td className="py-3.5 px-4 text-slate-500">
-                      {formatDate(member.joinedAt)}
-                    </td>
-
-                    {/* Actions */}
-                    {isOrgAdmin && (
-                      <td className="py-3.5 px-6 text-right">
-                        {member.userId !== currentMembership?.userId && (
-                          <button
-                            onClick={() => handleRemoveMember(member.id)}
-                            title="Remove member"
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg transition"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="flex items-center gap-1.5 text-xs overflow-x-auto pb-1 sm:pb-0">
+          {['ALL', 'ORG_ADMIN', 'TEAM_MANAGER', 'EMPLOYEE'].map((r) => (
+            <button
+              key={r}
+              onClick={() => setRoleFilter(r)}
+              className={`rounded-md px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
+                roleFilter === r
+                  ? 'bg-zinc-900 text-white'
+                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900'
+              }`}
+            >
+              {r === 'ALL' ? 'All Roles' : r.replace('_', ' ')}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* High-Density Personnel Table */}
+      {loading ? (
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-lg" />
+          ))}
+        </div>
+      ) : filteredMembers.length === 0 ? (
+        <EmptyState
+          icon={<Users className="h-8 w-8 text-zinc-400" />}
+          title="No personnel found"
+          description={
+            searchQuery
+              ? 'No team members match your filter criteria.'
+              : 'Invite colleagues to collaborate in your asynchronous workspace.'
+          }
+        />
+      ) : (
+        <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-zinc-100 bg-zinc-50/70 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+                <tr>
+                  <th className="py-3 px-4">Member</th>
+                  <th className="py-3 px-4">Email Address</th>
+                  <th className="py-3 px-4">Access Role</th>
+                  <th className="py-3 px-4">Department / Team</th>
+                  <th className="py-3 px-4">Joined Date</th>
+                  {isOrgAdmin && <th className="py-3 px-4 text-right">Actions</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100">
+                {filteredMembers.map((m) => {
+                  const initials = `${m.user.firstName?.[0] || ''}${m.user.lastName?.[0] || ''}`.toUpperCase();
+                  const roleBadgeVariant =
+                    m.role === 'ORG_ADMIN' || m.role === 'SUPER_ADMIN'
+                      ? 'primary'
+                      : m.role === 'TEAM_MANAGER'
+                      ? 'secondary'
+                      : 'outline';
+
+                  return (
+                    <tr key={m.id} className="hover:bg-zinc-50/50 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-white font-mono text-[10px] font-bold">
+                            {initials || 'U'}
+                          </div>
+                          <div>
+                            <span className="font-medium text-zinc-900 block">
+                              {m.user.firstName} {m.user.lastName}
+                            </span>
+                            <span className="text-[10px] font-mono text-zinc-400">
+                              UID-{m.userId.slice(0, 6)}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-4 font-mono text-zinc-600">
+                        {m.user.email}
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <Badge variant={roleBadgeVariant} className="font-mono text-[10px]">
+                          {m.role.replace('_', ' ')}
+                        </Badge>
+                      </td>
+
+                      <td className="py-3 px-4 text-zinc-600">
+                        {m.department?.name || 'General Operations'}
+                      </td>
+
+                      <td className="py-3 px-4 font-mono text-zinc-400">
+                        {formatDate(m.joinedAt)}
+                      </td>
+
+                      {isOrgAdmin && (
+                        <td className="py-3 px-4 text-right">
+                          {m.role !== 'ORG_ADMIN' && m.role !== 'SUPER_ADMIN' && (
+                            <button
+                              onClick={() => handleRemoveMember(m.id)}
+                              className="p-1 text-zinc-400 hover:text-rose-600 transition-colors rounded"
+                              title="Revoke member access"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Invite Member Modal */}
       <Modal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
-        title="Invite New Colleague"
-        description="Send an invitation link to join this AsyncFlow organization."
+        title="Invite Organization Personnel"
+        description="Send an invitation link and grant role-based workspace permissions."
       >
-        <form onSubmit={handleInvite} className="space-y-4 pt-2">
+        <form onSubmit={handleInvite} className="space-y-4 pt-1">
           {inviteSuccessMsg && (
-            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs font-semibold text-emerald-800 flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 p-2.5 text-xs text-emerald-800 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span>{inviteSuccessMsg}</span>
             </div>
           )}
 
           <Input
-            label="Colleague Email Address"
+            label="Corporate Email Address"
             type="email"
             value={inviteForm.email}
             onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
@@ -247,31 +285,27 @@ export const TeamManagementPage: React.FC = () => {
           />
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Assigned Role
-            </label>
+            <label className="block text-xs font-medium text-zinc-700 mb-1.5">Assigned Role</label>
             <select
               value={inviteForm.role}
-              onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value as Role })}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+              onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value as any })}
+              className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none transition-colors"
             >
-              <option value="EMPLOYEE">Employee (Read & Acknowledge SOPs, LMS)</option>
-              <option value="TEAM_MANAGER">Team Manager (Assign SOPs, Workflows)</option>
-              <option value="ORG_ADMIN">Organization Admin (Full Administrative Control)</option>
+              <option value="EMPLOYEE">Employee (Access training, sign SOPs, view tasks)</option>
+              <option value="TEAM_MANAGER">Team Manager (Assign SOPs, review approvals, manage team)</option>
+              <option value="ORG_ADMIN">Organization Admin (Full administrative and tenant control)</option>
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Department
-              </label>
+              <label className="block text-xs font-medium text-zinc-700 mb-1.5">Department</label>
               <select
                 value={inviteForm.departmentId}
                 onChange={(e) => setInviteForm({ ...inviteForm, departmentId: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none transition-colors"
               >
-                <option value="">No Department</option>
+                <option value="">General</option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -281,15 +315,13 @@ export const TeamManagementPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Squad / Team
-              </label>
+              <label className="block text-xs font-medium text-zinc-700 mb-1.5">Team / Squad</label>
               <select
                 value={inviteForm.teamId}
                 onChange={(e) => setInviteForm({ ...inviteForm, teamId: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none"
+                className="w-full rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none transition-colors"
               >
-                <option value="">No Squad</option>
+                <option value="">Unassigned</option>
                 {teams.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
@@ -300,11 +332,11 @@ export const TeamManagementPage: React.FC = () => {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setShowInviteModal(false)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowInviteModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={inviting}>
-              Send Invitation Link
+            <Button type="submit" size="sm" isLoading={inviting}>
+              Send Invitation
             </Button>
           </div>
         </form>

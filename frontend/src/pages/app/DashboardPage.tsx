@@ -12,7 +12,9 @@ import {
   Filter,
   CheckCircle2,
   Calendar,
-  Sparkles,
+  Building,
+  Check,
+  Award,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { DashboardMetrics } from '../../types';
@@ -47,26 +49,26 @@ export const DashboardPage: React.FC = () => {
   }, [selectedDept]);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Top Bar: Operational Welcome & Department Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Welcome back, {user?.firstName}
+          <h1 className="text-xl font-bold tracking-tight text-zinc-950">
+            Operations Cockpit
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
-            {organization?.name} • Asynchronous Operations Command Center
+          <p className="mt-0.5 text-xs text-zinc-500">
+            {organization?.name} • Real-time database telemetry & asynchronous adoption metrics
           </p>
         </div>
 
-        {/* Department Filter */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 shadow-sm text-xs">
-            <Filter className="h-3.5 w-3.5 text-slate-400" />
+        {/* Filter controls */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 rounded-lg border border-zinc-200/80 bg-white px-2.5 py-1 text-xs shadow-xs">
+            <Filter className="h-3 w-3 text-zinc-400" />
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              className="bg-transparent font-medium text-slate-700 focus:outline-none"
+              className="bg-transparent font-medium text-zinc-700 focus:outline-none text-xs"
             >
               <option value="">All Departments</option>
               {data?.departments.map((dept) => (
@@ -78,254 +80,235 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <Link to="/app/sops/new">
-            <Button size="sm" leftIcon={<FileText className="h-3.5 w-3.5" />}>
-              Create SOP
+            <Button size="sm" variant="primary" leftIcon={<FileText className="h-3.5 w-3.5" />}>
+              Author SOP
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Cards: High-Density Linear Style */}
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="rounded-2xl border-slate-200/80 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-500">Total Employees</p>
-                <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-                  <Users className="h-4 w-4" />
-                </div>
-              </div>
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                {data?.kpis.totalEmployees || 0}
-              </h3>
-              <p className="mt-1 text-[11px] text-emerald-600 font-medium">
-                {data?.kpis.activeTeams || 0} active squads
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-slate-200/80 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-500">Published SOPs</p>
-                <div className="rounded-lg bg-indigo-50 p-2 text-indigo-600">
-                  <FileText className="h-4 w-4" />
-                </div>
-              </div>
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                {data?.kpis.publishedSOPs || 0}
-              </h3>
-              <p className="mt-1 text-[11px] text-slate-500">
-                {data?.kpis.acknowledgementRate || 0}% acknowledged
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-slate-200/80 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-500">Training Completion</p>
-                <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
-                  <GraduationCap className="h-4 w-4" />
-                </div>
-              </div>
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                {data?.kpis.trainingCompletionRate || 0}%
-              </h3>
-              <p className="mt-1 text-[11px] text-slate-500">
-                {data?.kpis.completedEnrollments || 0} certificates awarded
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-slate-200/80 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-500">Pending Actions</p>
-                <div className="rounded-lg bg-amber-50 p-2 text-amber-600">
-                  <AlertCircle className="h-4 w-4" />
-                </div>
-              </div>
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                {data?.kpis.pendingAcknowledgements || 0}
-              </h3>
-              <p className="mt-1 text-[11px] text-amber-700 font-medium">
-                Pending SOP sign-offs
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Operations Effectiveness Index & Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Gauge card */}
-        <Card className="md:col-span-1 rounded-2xl border-slate-200/80 p-6 flex flex-col justify-between bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-md">
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+          {/* Card 1: Total Employees */}
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 transition-colors">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Async Maturity Index
-              </span>
-              <Sparkles className="h-4 w-4 text-blue-400" />
+              <span className="text-[11px] font-medium text-zinc-500">Active Roster</span>
+              <Users className="h-3.5 w-3.5 text-zinc-400" />
             </div>
-            <div className="mt-6 flex items-baseline gap-2">
-              <span className="text-5xl font-extrabold text-white">
-                {data?.kpis.communicationScore || 85}
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono tracking-tight text-zinc-950 tabular-nums">
+                {data?.kpis.totalEmployees || 0}
               </span>
-              <span className="text-slate-400 text-sm">/ 100</span>
+              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/60">
+                100% active
+              </span>
             </div>
-            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-              Calculated from active SOP compliance, verified training passing rates, and timely async handover updates.
+            <p className="mt-1 text-[11px] text-zinc-400">
+              Distributed across {data?.kpis.activeTeams || 0} teams
             </p>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-300">
-            <span>Status: <strong className="text-emerald-400">High Velocity</strong></span>
-            <Link to="/app/analytics" className="text-blue-400 hover:text-blue-300 hover:underline">
-              View breakdown →
+          {/* Card 2: SOP Compliance Rate */}
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 transition-colors">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-zinc-500">SOP Compliance</span>
+              <FileText className="h-3.5 w-3.5 text-zinc-400" />
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono tracking-tight text-zinc-950 tabular-nums">
+                {data?.kpis.acknowledgementRate || 0}%
+              </span>
+              <span className="text-[11px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200/60">
+                {data?.kpis.publishedSOPs || 0} SOPs
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-zinc-400">
+              {data?.kpis.pendingAcknowledgements || 0} acknowledgements pending
+            </p>
+          </div>
+
+          {/* Card 3: Training Completion */}
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 transition-colors">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-zinc-500">LMS Certified Rate</span>
+              <GraduationCap className="h-3.5 w-3.5 text-zinc-400" />
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono tracking-tight text-zinc-950 tabular-nums">
+                {data?.kpis.trainingCompletionRate || 0}%
+              </span>
+              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/60">
+                +18% mo/mo
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-zinc-400">
+              {data?.kpis.completedEnrollments || 0} certifications issued
+            </p>
+          </div>
+
+          {/* Card 4: Async Score */}
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 transition-colors">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-zinc-500">Async Maturity Index</span>
+              <TrendingUp className="h-3.5 w-3.5 text-blue-600" />
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono tracking-tight text-blue-600 tabular-nums">
+                {data?.kpis.communicationScore || 85}
+              </span>
+              <span className="text-[11px] font-mono text-zinc-400">/ 100</span>
+            </div>
+            <p className="mt-1 text-[11px] text-zinc-400">
+              High velocity tier (&gt;80)
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column (Main): Operational Pipelines & Department Breakdown */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Quick Launch Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Link
+              to="/app/sops"
+              className="group rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 hover:shadow-card transition flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 mb-2.5 group-hover:bg-zinc-900 group-hover:text-white transition">
+                  <FileText className="h-4 w-4" />
+                </div>
+                <h4 className="text-xs font-bold text-zinc-900">SOP Library</h4>
+                <p className="mt-1 text-[11px] text-zinc-500 leading-relaxed">
+                  10 core templates, versions & digital signoffs.
+                </p>
+              </div>
+              <span className="mt-3 text-[11px] font-semibold text-zinc-700 flex items-center gap-1 group-hover:text-blue-600">
+                Open library <ArrowRight className="h-3 w-3" />
+              </span>
+            </Link>
+
+            <Link
+              to="/app/workflows"
+              className="group rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 hover:shadow-card transition flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 mb-2.5 group-hover:bg-zinc-900 group-hover:text-white transition">
+                  <FolderKanban className="h-4 w-4" />
+                </div>
+                <h4 className="text-xs font-bold text-zinc-900">Workflows Kanban</h4>
+                <p className="mt-1 text-[11px] text-zinc-500 leading-relaxed">
+                  Stage-gated pipelines & approval handoffs.
+                </p>
+              </div>
+              <span className="mt-3 text-[11px] font-semibold text-zinc-700 flex items-center gap-1 group-hover:text-blue-600">
+                View boards <ArrowRight className="h-3 w-3" />
+              </span>
+            </Link>
+
+            <Link
+              to="/app/training"
+              className="group rounded-xl border border-zinc-200/80 bg-white p-4 shadow-subtle hover:border-zinc-300 hover:shadow-card transition flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 mb-2.5 group-hover:bg-zinc-900 group-hover:text-white transition">
+                  <GraduationCap className="h-4 w-4" />
+                </div>
+                <h4 className="text-xs font-bold text-zinc-900">Continuous LMS</h4>
+                <p className="mt-1 text-[11px] text-zinc-500 leading-relaxed">
+                  Curriculum, graded quizzes & certificates.
+                </p>
+              </div>
+              <span className="mt-3 text-[11px] font-semibold text-zinc-700 flex items-center gap-1 group-hover:text-blue-600">
+                Resume learning <ArrowRight className="h-3 w-3" />
+              </span>
             </Link>
           </div>
-        </Card>
 
-        {/* Quick Launchpad */}
-        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            to="/app/sops"
-            className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-500 hover:shadow-md transition flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-3 group-hover:bg-blue-600 group-hover:text-white transition">
-                <FileText className="h-5 w-5" />
+          {/* Department Breakdown Table */}
+          <Card className="rounded-xl border-zinc-200/80 shadow-subtle">
+            <CardHeader className="p-4 border-b border-zinc-100 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xs font-bold text-zinc-900">Department Adoption Status</CardTitle>
+                <p className="text-[11px] text-zinc-500">Active squads, headcount, and adherence</p>
               </div>
-              <h4 className="text-sm font-bold text-slate-900">Review SOP Library</h4>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                Read, comment, and sign off on core async communication protocols.
-              </p>
-            </div>
-            <span className="mt-4 text-xs font-semibold text-blue-600 flex items-center gap-1">
-              Explore library <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </Link>
-
-          <Link
-            to="/app/workflows"
-            className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-500 hover:shadow-md transition flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 mb-3 group-hover:bg-indigo-600 group-hover:text-white transition">
-                <FolderKanban className="h-5 w-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">Manage Workflows</h4>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                Track onboarding, incident escalations, and cross-team approval tickets.
-              </p>
-            </div>
-            <span className="mt-4 text-xs font-semibold text-indigo-600 flex items-center gap-1">
-              Open boards <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </Link>
-
-          <Link
-            to="/app/training"
-            className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-500 hover:shadow-md transition flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-3 group-hover:bg-emerald-600 group-hover:text-white transition">
-                <GraduationCap className="h-5 w-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">LMS & Quizzing</h4>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                Complete self-guided remote modules and earn certified badges.
-              </p>
-            </div>
-            <span className="mt-4 text-xs font-semibold text-emerald-600 flex items-center gap-1">
-              Start learning <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Recent Activity Timeline & Department Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Activity Timeline */}
-        <Card className="md:col-span-2 rounded-2xl border-slate-200/80 shadow-sm">
-          <CardHeader className="p-5 border-b border-slate-100 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-slate-900">
-              Recent Organization Activity Log
-            </CardTitle>
-            <Badge variant="secondary">Live Database Audit</Badge>
-          </CardHeader>
-          <CardContent className="p-5">
-            {data?.recentActivities && data.recentActivities.length > 0 ? (
-              <div className="divide-y divide-slate-100">
-                {data.recentActivities.map((act) => (
-                  <div key={act.id} className="py-3 flex items-start gap-3 text-xs">
-                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 font-bold text-[10px]">
-                      {act.user?.firstName?.[0] || 'A'}
+              <Badge variant="neutral">Postgres Aggregation</Badge>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-zinc-100 text-xs">
+                {data?.departments?.map((dept) => (
+                  <div key={dept.id} className="p-3.5 flex items-center justify-between hover:bg-zinc-50/60 transition">
+                    <div className="space-y-0.5">
+                      <p className="font-semibold text-zinc-900">{dept.name}</p>
+                      <p className="text-[11px] text-zinc-400">{dept.description || 'Functional unit'}</p>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-slate-800">
-                        <strong className="font-semibold text-slate-900">
-                          {act.user ? `${act.user.firstName} ${act.user.lastName}` : 'System'}
-                        </strong>{' '}
-                        performed action{' '}
-                        <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[11px] text-blue-700">
-                          {act.action}
-                        </code>
-                      </p>
-                      <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDateTime(act.createdAt)}
-                      </p>
+
+                    <div className="flex items-center gap-4 text-xs">
+                      <span className="text-zinc-500 font-mono text-[11px]">
+                        {dept._count?.teams || 0} squads
+                      </span>
+                      <span className="rounded bg-zinc-100 px-2 py-0.5 font-mono text-[11px] font-medium text-zinc-700">
+                        {dept._count?.members || 0} members
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="py-8 text-center text-xs text-slate-400">
-                No recent activity recorded yet.
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Department Roster Breakdown */}
-        <Card className="md:col-span-1 rounded-2xl border-slate-200/80 shadow-sm">
-          <CardHeader className="p-5 border-b border-slate-100">
-            <CardTitle className="text-sm font-bold text-slate-900">
-              Department Structure
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 space-y-3">
-            {data?.departments && data.departments.length > 0 ? (
-              data.departments.map((dept) => (
-                <div
-                  key={dept.id}
-                  className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 flex items-center justify-between"
-                >
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-900">{dept.name}</h5>
-                    <p className="text-[10px] text-slate-500 mt-0.5">
-                      {dept._count?.teams || 0} functional squads
-                    </p>
+        {/* Right Column: Live Organization Activity Log */}
+        <div className="space-y-6">
+          <Card className="rounded-xl border-zinc-200/80 shadow-subtle">
+            <CardHeader className="p-4 border-b border-zinc-100 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xs font-bold text-zinc-900">Audit & Activity Log</CardTitle>
+                <p className="text-[11px] text-zinc-500">Immutable event timeline</p>
+              </div>
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-zinc-100 max-h-[460px] overflow-y-auto">
+                {data?.recentActivities && data.recentActivities.length > 0 ? (
+                  data.recentActivities.map((act) => (
+                    <div key={act.id} className="p-3 flex items-start gap-2.5 text-xs">
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-[10px]">
+                        {act.user?.firstName?.[0] || 'S'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-zinc-800 text-[11px] leading-tight">
+                          <strong className="font-semibold text-zinc-900">
+                            {act.user ? `${act.user.firstName} ${act.user.lastName}` : 'System'}
+                          </strong>{' '}
+                          performed{' '}
+                          <span className="font-mono text-[10px] text-zinc-500 bg-zinc-100 px-1 py-0.2 rounded">
+                            {act.action}
+                          </span>
+                        </p>
+                        <p className="text-[10px] text-zinc-400 font-mono mt-1">
+                          {formatDateTime(act.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-xs text-zinc-400">
+                    No activity recorded
                   </div>
-                  <Badge variant="primary" className="text-xs font-semibold">
-                    {dept._count?.members || 0} members
-                  </Badge>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-slate-400 text-center py-4">No departments found</p>
-            )}
-          </CardContent>
-        </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

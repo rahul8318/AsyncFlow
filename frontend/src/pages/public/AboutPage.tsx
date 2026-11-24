@@ -1,50 +1,72 @@
 import React from 'react';
 import { PublicNavbar } from '../../components/layout/PublicNavbar';
 import { PublicFooter } from '../../components/layout/PublicFooter';
-import { Target, Users2, Shield, HeartHandshake } from 'lucide-react';
+import { Target, Users2, Shield, HeartHandshake, ArrowRight } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
+import { Link } from 'react-router-dom';
 
 export const AboutPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans">
       <PublicNavbar />
       <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 flex-1 space-y-16">
-        <div className="text-center max-w-3xl mx-auto">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
-            Our Mission: Empower Remote Work Without Meeting Burnout
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <Badge variant="outline" className="font-mono text-[10px] tracking-wide uppercase">
+            Our Purpose & Manifesto
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-zinc-900 leading-tight">
+            Empower Remote Teams Without Calendar Burnout
           </h1>
-          <p className="mt-4 text-lg text-slate-600 leading-relaxed">
-            We believe that the future of work is distributed, but only when teams master asynchronous operations.
+          <p className="text-sm sm:text-base text-zinc-600 leading-relaxed font-normal max-w-2xl mx-auto">
+            We believe that the future of work is globally distributed, but only when organizations master structured asynchronous operations.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 md:p-12 shadow-sm space-y-6 text-sm text-slate-700 leading-relaxed">
-          <h2 className="text-2xl font-bold text-slate-900">The AsyncFlow Manifesto</h2>
+        <div className="rounded-xl border border-zinc-200 bg-white p-8 md:p-12 shadow-sm space-y-6 text-xs sm:text-sm text-zinc-700 leading-relaxed font-normal">
+          <h2 className="text-xl sm:text-2xl font-semibold text-zinc-900 tracking-tight">
+            The Asynchronous Imperative
+          </h2>
           <p>
-            When organizations made the transition to remote work, they brought with them the legacy habits of physical offices: tapping colleagues on the shoulder, demanding instant answers, and organizing endless meetings to share updates that could have been communicated in a concise written memo.
+            When companies shifted to distributed work, they brought with them the legacy habits of physical offices: tapping colleagues on the shoulder via instant message, demanding instantaneous replies, and organizing endless video meetings to share status updates that could have been communicated in a concise written memo.
           </p>
           <p>
-            The result was predictable: calendar fragmentation, zoom fatigue, and decision making biased exclusively toward employees residing in the headquarters' primary timezone.
+            The consequences were immediate: calendar fragmentation, cognitive fatigue, and decision-making biased toward whoever happened to be awake in the headquarters' primary timezone.
           </p>
           <p>
-            AsyncFlow was founded on a fundamental realization: <strong>writing is the operating system of distributed leverage</strong>. By providing organizations with structured SOP authoring, verified checklists, stage-gated workflows, and live adoption analytics, we give companies the tools to coordinate thousands of people across dozens of countries with surgical precision.
+            AsyncFlow was founded on a fundamental realization: <strong>writing is the operating system of distributed leverage</strong>. By providing organizations with structured SOP authoring, verified checklists, stage-gated pipelines, and live adoption analytics, we give teams the tools to coordinate thousands of people across dozens of time zones with surgical precision.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <Target className="h-8 w-8 text-blue-600 mb-3" />
-            <h3 className="font-bold text-slate-900 mb-1">Focus Over Fragmentation</h3>
-            <p className="text-xs text-slate-500">We design software that protects 4-hour deep work blocks rather than spamming users with constant pings.</p>
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm space-y-2">
+            <div className="h-9 w-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center mb-3">
+              <Target className="h-4 w-4" />
+            </div>
+            <h3 className="text-sm font-semibold text-zinc-900">Focus Over Fragmentation</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+              Software designed to protect 4-hour deep work blocks rather than inundating contributors with constant pings.
+            </p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <Users2 className="h-8 w-8 text-indigo-600 mb-3" />
-            <h3 className="font-bold text-slate-900 mb-1">Geographic Inclusivity</h3>
-            <p className="text-xs text-slate-500">A contributor in Tokyo or Mumbai should have equal influence on product decisions as one in San Francisco or London.</p>
+
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm space-y-2">
+            <div className="h-9 w-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center mb-3">
+              <Users2 className="h-4 w-4" />
+            </div>
+            <h3 className="text-sm font-semibold text-zinc-900">Geographic Neutrality</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+              A contributor in Tokyo or London has identical voice and influence on product architecture as someone in San Francisco.
+            </p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <Shield className="h-8 w-8 text-emerald-600 mb-3" />
-            <h3 className="font-bold text-slate-900 mb-1">Verifiable Accountability</h3>
-            <p className="text-xs text-slate-500">Policies only matter if people know they exist. Digital acknowledgements and certifications ensure alignment.</p>
+
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm space-y-2">
+            <div className="h-9 w-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center mb-3">
+              <Shield className="h-4 w-4" />
+            </div>
+            <h3 className="text-sm font-semibold text-zinc-900">Verifiable Compliance</h3>
+            <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+              Operating standards only work when verified. Digital compliance signoffs and certified exams eliminate ambiguity.
+            </p>
           </div>
         </div>
       </div>
